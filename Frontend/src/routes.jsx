@@ -22,6 +22,7 @@ import FAQ from "./Components/Landingpage/FAQs.jsx";
 import Contact from "./Components/Landingpage/Contact.jsx";
 import Login from "./Components/Login.jsx";
 import Register from "./Components/Register.jsx";
+import VerifyEmail from "./Components/Auth/VerifyEmail.jsx";
 import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Profile from "./Components/Profile.jsx";
 import StudentProfile from "./Components/StudentProfile";
@@ -40,6 +41,7 @@ import ProtectedRoute from "./Components/protected/ProtectedRoute";
 import Hostels from "./Components/ServiceConsumers/Hostels.jsx";
 import MessServices from "./Components/ServiceConsumers/MessServices.jsx";
 import Gym from "./Components/ServiceConsumers/Gym.jsx";
+import MyBookings from "./Components/ServiceConsumers/MyBookings.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -78,6 +80,10 @@ export const router = createBrowserRouter([
         path: "/register",
         element: <Register />,
       },
+      {
+        path: "/verify-email",
+        element: <VerifyEmail />,
+      },
     ],
   },
   {
@@ -103,6 +109,10 @@ export const router = createBrowserRouter([
       {
         path: "gym",
         element: <Gym />
+      },
+      {
+        path: "my-bookings",
+        element: <MyBookings />
       },
       {
         path: "profile",

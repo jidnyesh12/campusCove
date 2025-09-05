@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FaBuilding, FaUtensils, FaDumbbell, FaPlus, FaEdit, FaTrash, FaUpload, FaCheck, FaSpinner } from 'react-icons/fa';
 import axios from 'axios';
-import { API_BASE_URL } from '../../config';
 
 export default function ServiceManagement() {
   const { user } = useAuth();
@@ -120,7 +119,9 @@ export default function ServiceManagement() {
   });
 
   // API base URL
-  const API_URL = API_BASE_URL;
+  const API_URL = process.env.NODE_ENV === 'production' 
+    ? 'https://campus-cove.onrender.com/api' 
+    : 'http://localhost:5000/api';
 
   // Fetch listings based on account type
   const fetchListings = async () => {

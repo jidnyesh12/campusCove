@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FaMapMarkerAlt, FaRupeeSign, FaUtensils, FaLeaf, FaDrumstickBite, FaClock, FaSpinner } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaRupeeSign, FaUtensils, FaLeaf, FaDrumstickBite, FaClock, FaSpinner, FaCheckCircle, FaCreditCard } from 'react-icons/fa';
 import MessDetail from './MessDetail';
-import { fetchMessServices, subscribeToMess, getStudentSubscriptions } from '../../utils/api';
+import BookingModal from './BookingModal';
+import Receipt from './Receipt';
+import { fetchMessServices, checkServiceBookingStatus, updatePaymentStatus, getUserDetails } from '../../utils/api';
+import { initiateRazorpayPayment } from '../../utils/razorpay';
+import { toast } from 'react-toastify';
 
 export default function MessServices() {
   const [messServices, setMessServices] = useState([]);
@@ -9,37 +13,54 @@ export default function MessServices() {
   const [error, setError] = useState(null);
   const [selectedMess, setSelectedMess] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [subscribingId, setSubscribingId] = useState(null);
-  const [subscriptionStatus, setSubscriptionStatus] = useState({});
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingMess, setBookingMess] = useState(null);
+  const [bookingStatuses, setBookingStatuses] = useState({});
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const getMessServices = async () => {
       try {
         setLoading(true);
-        const [messData, subscriptionsData] = await Promise.all([
-          fetchMessServices(),
-          getStudentSubscriptions()
-        ]);
+        const data = await fetchMessServices();
+        setMessServices(data);
         
-        setMessServices(messData);
+        // Check booking status for each mess
+        const statuses = {};
+        for (const mess of data) {
+          try {
+            const status = await checkServiceBookingStatus('mess', mess._id);
+            statuses[mess._id] = status;
+          } catch (err) {
+            console.error(`Error checking status for mess ${mess._id}:`, err);
+          }
+        }
         
-        // Create a map of mess ID to subscription status
-        const statusMap = {};
-        subscriptionsData.forEach(sub => {
-          statusMap[sub.mess] = sub.status;
-        });
-        setSubscriptionStatus(statusMap);
-        
+        setBookingStatuses(statuses);
         setError(null);
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('Error fetching mess services:', err);
         setError('Failed to load mess services. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
+    const loadUserProfile = async () => {
+      try {
+        const userData = await getUserDetails();
+        if (userData && userData.data) {
+          setUserProfile(userData.data);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+    getMessServices();
+    loadUserProfile();
   }, []);
 
   // Function to get meal type icon
@@ -72,94 +93,165 @@ export default function MessServices() {
     setShowDetailModal(false);
   };
 
-  const handleSubscribe = async (messId) => {
+  // Handle subscription button click
+  const handleSubscribe = (mess) => {
+    setBookingMess(mess);
+    setShowBookingModal(true);
+  };
+
+  // Handle payment for a mess service
+  const handlePayNow = async (messId) => {
     try {
-      setSubscribingId(messId);
-      await subscribeToMess(messId);
-      alert('Subscription request sent successfully!');
+      setLoading(true);
+      const mess = messServices.find(mess => mess._id === messId);
+      if (!mess) {
+        toast.error('Mess service not found');
+        setLoading(false);
+        return;
+      }
+
+      const status = bookingStatuses[messId];
+      if (!status || !status.hasBooking || !status.booking) {
+        toast.error('No active subscription found');
+        setLoading(false);
+        return;
+      }
+
+      const booking = status.booking;
+      
+      // Prepare payment data for Razorpay
+      const paymentData = {
+        bookingId: booking._id,
+        amount: mess.monthlyPrice,
+        serviceType: 'mess',
+        serviceName: mess.messName,
+        userName: userProfile?.name || userProfile?.username || 'User',
+        userEmail: userProfile?.email || '',
+        userPhone: userProfile?.phone || '',
+        serviceId: mess._id
+      };
+      
+      // Handle successful payment
+      const onPaymentSuccess = async (response) => {
+        try {
+          // Refresh booking status from the server
+          const freshStatus = await checkServiceBookingStatus('mess', mess._id);
+          
+          // Update booking statuses
+          setBookingStatuses(prev => ({
+            ...prev,
+            [mess._id]: freshStatus
+          }));
+          
+          // Prepare receipt data
+          const receiptData = {
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            paymentDate: new Date(),
+            paymentMethod: 'Razorpay',
+            amount: mess.monthlyPrice,
+            customerName: userProfile?.name || userProfile?.username || 'User',
+            customerEmail: userProfile?.email || '',
+            serviceName: mess.messName,
+            serviceType: 'mess',
+            duration: booking.bookingDetails?.duration || '1 month',
+            receiptNumber: freshStatus.booking?.receiptNumber || `RCP-${Date.now().toString().slice(-8)}`
+          };
+          
+          // Show receipt
+          setReceiptData(receiptData);
+          setShowReceiptModal(true);
+        } catch (error) {
+          console.error('Error processing payment success:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      // Initialize Razorpay payment
+      await initiateRazorpayPayment(paymentData, onPaymentSuccess);
+      
     } catch (error) {
-      console.error('Subscription error:', error);
-      alert('Failed to send subscription request. Please try again.');
-    } finally {
-      setSubscribingId(null);
+      console.error('Payment error:', error);
+      toast.error('Failed to process payment. Please try again.');
+      setLoading(false);
     }
   };
 
-  // Update getSubscriptionContent to receive mess parameter
-  const getSubscriptionContent = (mess, messId) => {
-    const status = subscriptionStatus[messId];
-    
-    if (subscribingId === messId) {
-      return (
-        <>
-          <FaSpinner className="animate-spin mr-2" />
-          Sending...
-        </>
-      );
-    }
-
-    switch(status) {
-      case 'accepted':
-        return (
-          <div className="flex flex-col gap-2 w-full">
-            <span className="text-green-600 font-medium">
-              Subscribed!
-            </span>
-            <button 
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                alert('Payment functionality coming soon!');
-              }}
-            >
-              Pay Now (₹{mess.monthlyPrice})
-            </button>
-          </div>
-        );
-      case 'rejected':
-        return (
-          <span className="text-red-600 font-medium">
-            Denied!
-          </span>
-        );
-      case 'pending':
-        return (
-          <span className="text-yellow-600 font-medium">
-            Pending
-          </span>
-        );
-      default:
-        return mess.availability ? 'Subscribe' : 'Not Available';
-    }
-  };
-
+  // Get subscription button text and class based on availability and booking status
   const getSubscriptionButton = (mess) => {
-    const status = subscriptionStatus[mess._id];
-    const isSubscribed = status === 'accepted';
-    const isPending = status === 'pending';
-    const isDenied = status === 'rejected';
+    // Default state for unavailable mess
+    if (!mess.availability) {
+      return {
+        text: 'Not Available',
+        disabled: true,
+        className: 'bg-gray-400 cursor-not-allowed',
+        icon: null,
+        onClick: () => {}
+      };
+    }
+    
+    const bookingStatus = bookingStatuses[mess._id];
+    
+    // If we have a booking status for this mess
+    if (bookingStatus?.hasBooking) {
+      // If booking is accepted, check payment status
+      if (bookingStatus.status === 'accepted') {
+        const isPaid = bookingStatus.booking?.paymentStatus === 'paid';
+        
+        if (isPaid) {
+          return {
+            text: 'Subscribed',
+            disabled: true,
+            className: 'bg-green-600 cursor-not-allowed',
+            icon: <FaCheckCircle className="mr-1" />,
+            onClick: () => {}
+          };
+        } else {
+          return {
+            text: 'Pay Now',
+            disabled: false,
+            className: 'bg-indigo-600 hover:bg-indigo-700',
+            icon: <FaCreditCard className="mr-1" />,
+            onClick: () => handlePayNow(mess._id)
+          };
+        }
+      }
+      
+      // If booking is pending, show Pending status
+      if (bookingStatus.status === 'pending') {
+        return {
+          text: 'Subscription Pending',
+          disabled: true,
+          className: 'bg-yellow-500 cursor-not-allowed',
+          onClick: () => {}
+        };
+      }
+    }
+    
+    // Default case: Available for subscription
+    return {
+      text: 'Subscribe',
+      disabled: false,
+      className: 'bg-green-600 hover:bg-green-700',
+      onClick: () => handleSubscribe(mess)
+    };
+  };
 
-    return (
-      <div className={`flex flex-col ${isSubscribed ? 'w-full' : ''}`}>
-        <button 
-          className={`px-3 py-1 rounded flex items-center justify-center ${
-            isSubscribed 
-              ? 'bg-green-100 text-green-600 cursor-default w-full' 
-              : isPending
-                ? 'bg-yellow-100 text-yellow-600 cursor-default'
-                : isDenied
-                  ? 'bg-red-100 text-red-600 cursor-default'
-                  : mess.availability
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-400 text-white cursor-not-allowed'
-          }`}
-          disabled={!mess.availability || isSubscribed || isPending || isDenied || subscribingId === mess._id}
-          onClick={() => handleSubscribe(mess._id)}
-        >
-          {getSubscriptionContent(mess, mess._id)}
-        </button>
-      </div>
-    );
+  // Handle subscription success
+  const handleSubscriptionSuccess = (booking) => {
+    // Update the booking status for this mess
+    setBookingStatuses(prev => ({
+      ...prev,
+      [booking.serviceId]: {
+        hasBooking: true,
+        status: 'pending',
+        booking
+      }
+    }));
+    
+    setShowBookingModal(false);
   };
 
   if (loading) {
@@ -188,76 +280,86 @@ export default function MessServices() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {messServices.map((mess) => (
-            <div key={mess._id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
-              <div className="relative h-48 bg-gray-200">
-                {mess.images && mess.images.length > 0 ? (
-                  <img 
-                    src={mess.images[0].url} 
-                    alt={mess.messName} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full bg-gray-200 text-gray-400">
-                    <FaUtensils className="text-5xl" />
-                  </div>
-                )}
-                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 text-xs rounded flex items-center">
-                  {getMealTypeIcon(mess.messType)}
-                  <span className="ml-1">{mess.messType === 'nonVeg' ? 'Non-Veg' : mess.messType}</span>
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">{mess.messName}</h3>
-                <div className="flex items-center text-sm text-gray-500 mb-2">
-                  <FaMapMarkerAlt className="mr-1 text-green-500" />
-                  <span>{mess.address || 'Location not specified'}</span>
-                </div>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {mess.description || 'No description available'}
-                </p>
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center text-green-600 font-semibold">
-                    <FaRupeeSign className="mr-1" />
-                    <span>{mess.monthlyPrice}</span>
-                    <span className="text-gray-500 font-normal text-xs ml-1">/month</span>
-                  </div>
-                  {mess.openingHours && (
-                    <div className="flex items-center text-sm text-gray-500">
-                      <FaClock className="mr-1" />
-                      <span>{mess.openingHours}</span>
+          {messServices.map((mess) => {
+            const subscriptionBtn = getSubscriptionButton(mess);
+            
+            return (
+              <div key={mess._id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white">
+                <div className="relative h-48 bg-gray-200">
+                  {mess.images && mess.images.length > 0 ? (
+                    <img 
+                      src={mess.images[0].url} 
+                      alt={mess.messName} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full bg-gray-200 text-gray-400">
+                      <FaUtensils className="text-5xl" />
                     </div>
                   )}
-                </div>
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Services</h4>
-                  <div className="flex flex-wrap gap-1 text-xs">
-                    {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.breakfast && (
-                      <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Breakfast</span>
-                    )}
-                    {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.lunch && (
-                      <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Lunch</span>
-                    )}
-                    {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.dinner && (
-                      <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Dinner</span>
-                    )}
-                    {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.snacks && (
-                      <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Snacks</span>
-                    )}
+                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 text-xs rounded flex items-center">
+                    {getMealTypeIcon(mess.messType)}
+                    <span className="ml-1">{mess.messType === 'nonVeg' ? 'Non-Veg' : mess.messType}</span>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <button 
-                    className="bg-white text-green-600 border border-green-600 px-3 py-1 rounded hover:bg-green-50"
-                    onClick={() => handleViewDetails(mess)}
-                  >
-                    View Details
-                  </button>
-                  {getSubscriptionButton(mess)}
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">{mess.messName}</h3>
+                  <div className="flex items-center text-sm text-gray-500 mb-2">
+                    <FaMapMarkerAlt className="mr-1 text-green-500" />
+                    <span>{mess.address || 'Location not specified'}</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {mess.description || 'No description available'}
+                  </p>
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center text-green-600 font-semibold">
+                      <FaRupeeSign className="mr-1" />
+                      <span>{mess.monthlyPrice}</span>
+                      <span className="text-gray-500 font-normal text-xs ml-1">/month</span>
+                    </div>
+                    {mess.openingHours && (
+                      <div className="flex items-center text-sm text-gray-500">
+                        <FaClock className="mr-1" />
+                        <span>{mess.openingHours}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">Services</h4>
+                    <div className="flex flex-wrap gap-1 text-xs">
+                      {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.breakfast && (
+                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Breakfast</span>
+                      )}
+                      {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.lunch && (
+                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Lunch</span>
+                      )}
+                      {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.dinner && (
+                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Dinner</span>
+                      )}
+                      {mess.weeklyMenu && mess.weeklyMenu.monday && mess.weeklyMenu.monday.snacks && (
+                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded">Snacks</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between">
+                    <button 
+                      className="bg-white text-green-600 border border-green-600 px-3 py-1 rounded hover:bg-green-50"
+                      onClick={() => handleViewDetails(mess)}
+                    >
+                      View Details
+                    </button>
+                    <button 
+                      onClick={subscriptionBtn.onClick}
+                      disabled={subscriptionBtn.disabled}
+                      className={`text-white px-3 py-1 rounded transition flex items-center ${subscriptionBtn.className}`}
+                    >
+                      {subscriptionBtn.icon} {subscriptionBtn.text}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
       
@@ -265,7 +367,28 @@ export default function MessServices() {
       {showDetailModal && selectedMess && (
         <MessDetail 
           mess={selectedMess} 
-          onClose={handleCloseDetail} 
+          onClose={handleCloseDetail}
+          bookingStatus={bookingStatuses[selectedMess._id]}
+          onBookingSuccess={handleSubscriptionSuccess}
+          onPayment={handlePayNow}
+        />
+      )}
+
+      {/* Booking Modal */}
+      {showBookingModal && bookingMess && (
+        <BookingModal
+          service={bookingMess}
+          serviceType="mess"
+          onClose={() => setShowBookingModal(false)}
+          onSuccess={handleSubscriptionSuccess}
+        />
+      )}
+      
+      {/* Receipt Modal */}
+      {showReceiptModal && receiptData && (
+        <Receipt 
+          paymentData={receiptData}
+          onClose={() => setShowReceiptModal(false)}
         />
       )}
     </div>

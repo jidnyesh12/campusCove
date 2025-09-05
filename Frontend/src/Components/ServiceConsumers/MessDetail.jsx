@@ -23,15 +23,20 @@ import {
   FaIdCard,
   FaUsers,
   FaSpinner,
-  FaUserFriends
+  FaUserFriends,
+  FaCreditCard
 } from 'react-icons/fa';
-import { fetchOwnerDetails } from '../../utils/api';
+import { fetchOwnerDetails, checkServiceBookingStatus, updatePaymentStatus, getUserDetails } from '../../utils/api';
+import { initiateRazorpayPayment } from '../../utils/razorpay';
 import OwnerProfileModal from './OwnerProfileModal';
+import BookingModal from './BookingModal';
+import Receipt from './Receipt';
+import { toast } from 'react-toastify';
 
 // CSS classes for animation
 const ANIMATION_CLASSES = "animate-fadeIn";
 
-export default function MessDetail({ mess, onClose }) {
+export default function MessDetail({ mess, onClose, bookingStatus, onBookingSuccess, onPayment }) {
   if (!mess) return null;
   
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -40,8 +45,32 @@ export default function MessDetail({ mess, onClose }) {
   const [error, setError] = useState(null);
   const [activeDay, setActiveDay] = useState('monday');
   const [showOwnerProfile, setShowOwnerProfile] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [currentBookingStatus, setCurrentBookingStatus] = useState(bookingStatus);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   
-  // Fetch owner details
+  // Fetch booking status if not provided
+  useEffect(() => {
+    const getBookingStatus = async () => {
+      if (bookingStatus) {
+        setCurrentBookingStatus(bookingStatus);
+        return;
+      }
+      
+      try {
+        const status = await checkServiceBookingStatus('mess', mess._id);
+        setCurrentBookingStatus(status);
+      } catch (err) {
+        console.error('Error checking booking status:', err);
+      }
+    };
+    
+    getBookingStatus();
+  }, [mess._id, bookingStatus]);
+  
+  // Fetch owner details and user profile
   useEffect(() => {
     const getOwnerDetails = async () => {
       if (!mess.owner) return;
@@ -62,8 +91,20 @@ export default function MessDetail({ mess, onClose }) {
         setLoading(false);
       }
     };
+
+    const loadUserProfile = async () => {
+      try {
+        const userData = await getUserDetails();
+        if (userData && userData.data) {
+          setUserProfile(userData.data);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
     
     getOwnerDetails();
+    loadUserProfile();
   }, [mess.owner]);
   
   // Function to display amenities icons
@@ -181,6 +222,99 @@ export default function MessDetail({ mess, onClose }) {
     if (!mess.owner) return null;
     return typeof mess.owner === 'object' ? mess.owner._id : mess.owner;
   };
+
+  // Handle subscription button click
+  const handleSubscribe = () => {
+    setShowSubscriptionModal(true);
+  };
+
+  // Handle subscription success
+  const handleSubscriptionSuccess = (booking) => {
+    // Update the booking status
+    setCurrentBookingStatus({
+      hasBooking: true,
+      status: 'pending',
+      booking
+    });
+    
+    setShowSubscriptionModal(false);
+    
+    // Call parent callback if provided
+    if (onBookingSuccess) {
+      onBookingSuccess(booking);
+    }
+  };
+
+  // Handle payment click
+  const handlePayment = () => {
+    if (onPayment && mess._id) {
+      onPayment(mess._id);
+    } else {
+      toast.error('Unable to process payment at this time');
+    }
+  };
+
+  // Get subscription button properties based on availability and booking status
+  const getSubscriptionButton = () => {
+    // Default state for unavailable mess
+    if (!mess.availability) {
+      return {
+        text: 'Not Available',
+        disabled: true,
+        className: 'bg-gray-400 cursor-not-allowed',
+        icon: null,
+        onClick: () => {}
+      };
+    }
+    
+    // If there's an existing booking
+    if (currentBookingStatus?.hasBooking) {
+      // If booking is accepted, check payment status
+      if (currentBookingStatus.status === 'accepted') {
+        const isPaid = currentBookingStatus.booking?.paymentStatus === 'paid';
+        
+        if (isPaid) {
+          return {
+            text: 'Subscribed',
+            disabled: true,
+            className: 'bg-green-600 cursor-not-allowed',
+            icon: <FaCheckCircle className="mr-1" />,
+            onClick: () => {}
+          };
+        } else {
+          return {
+            text: 'Pay Now',
+            disabled: false,
+            className: 'bg-indigo-600 hover:bg-indigo-700',
+            icon: <FaCreditCard className="mr-1" />,
+            onClick: handlePayment
+          };
+        }
+      }
+      
+      // If booking is pending
+      if (currentBookingStatus.status === 'pending') {
+        return {
+          text: 'Subscription Pending',
+          disabled: true,
+          className: 'bg-yellow-500 cursor-not-allowed',
+          icon: null,
+          onClick: () => {}
+        };
+      }
+    }
+    
+    // Default: Available for subscription
+    return {
+      text: 'Subscribe Now',
+      disabled: false,
+      className: 'bg-green-600 hover:bg-green-700',
+      icon: null,
+      onClick: handleSubscribe
+    };
+  };
+
+  const subscriptionButton = getSubscriptionButton();
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[1000] p-4 overflow-y-auto" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
@@ -520,12 +654,11 @@ export default function MessDetail({ mess, onClose }) {
                   Contact Owner
                 </button>
                 <button 
-                  className={`px-4 py-2 text-white text-sm font-medium rounded-md transition shadow-md ${
-                    mess.availability ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
-                  }`}
-                  disabled={!mess.availability}
+                  className={`px-4 py-2 text-white text-sm font-medium rounded-md transition shadow-md flex items-center ${subscriptionButton.className}`}
+                  disabled={subscriptionButton.disabled}
+                  onClick={subscriptionButton.onClick}
                 >
-                  {mess.availability ? 'Subscribe Now' : 'Not Available'}
+                  {subscriptionButton.icon} {subscriptionButton.text}
                 </button>
               </div>
             </div>
@@ -538,6 +671,24 @@ export default function MessDetail({ mess, onClose }) {
         <OwnerProfileModal 
           ownerId={getOwnerId()} 
           onClose={() => setShowOwnerProfile(false)} 
+        />
+      )}
+
+      {/* Show Subscription Modal when button is clicked */}
+      {showSubscriptionModal && (
+        <BookingModal 
+          service={mess}
+          serviceType="mess"
+          onClose={() => setShowSubscriptionModal(false)}
+          onSuccess={handleSubscriptionSuccess}
+        />
+      )}
+
+      {/* Receipt Modal */}
+      {showReceiptModal && receiptData && (
+        <Receipt 
+          paymentData={receiptData}
+          onClose={() => setShowReceiptModal(false)}
         />
       )}
     </div>

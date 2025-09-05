@@ -26,12 +26,12 @@ import {
   FaUserFriends,
   FaCreditCard
 } from 'react-icons/fa';
-import { fetchOwnerDetails, checkServiceBookingStatus, updatePaymentStatus, getUserDetails } from '../../utils/api';
-import { initiateRazorpayPayment } from '../../utils/razorpay';
+import { fetchOwnerDetails, checkServiceBookingStatus, updatePaymentStatus, getUserDetails } from '../../Utils/api';
+import { initiateRazorpayPayment } from '../../Utils/razorpay';
 import OwnerProfileModal from './OwnerProfileModal';
 import BookingModal from './BookingModal';
 import Receipt from './Receipt';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 // CSS classes for animation
 const ANIMATION_CLASSES = "animate-fadeIn";

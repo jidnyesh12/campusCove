@@ -3,9 +3,9 @@ import { FaMapMarkerAlt, FaRupeeSign, FaUtensils, FaLeaf, FaDrumstickBite, FaClo
 import MessDetail from './MessDetail';
 import BookingModal from './BookingModal';
 import Receipt from './Receipt';
-import { fetchMessServices, checkServiceBookingStatus, updatePaymentStatus, getUserDetails } from '../../utils/api';
-import { initiateRazorpayPayment } from '../../utils/razorpay';
-import { toast } from 'react-toastify';
+import { fetchMessServices, checkServiceBookingStatus, updatePaymentStatus, getUserDetails } from '../../Utils/api';
+import { initiateRazorpayPayment } from '../../Utils/razorpay';
+import toast from 'react-hot-toast';
 
 export default function MessServices() {
   const [messServices, setMessServices] = useState([]);

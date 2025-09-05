@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FaHome, FaBook, FaUtensils, FaDumbbell, FaUser, FaSignOutAlt, FaTimes, FaCalendarCheck } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../Context/AuthContext';
 
 export default function StudentSidebar() {
   const { logout } = useAuth();

@@ -4,8 +4,8 @@ import {
   FaBuilding, FaUserFriends, FaUtensils, FaDumbbell,
   FaMoneyBillWave, FaExclamationCircle, FaTable
 } from 'react-icons/fa';
-import { getRevenueStats, fetchUserProfile } from '../../utils/api';
-import { toast } from 'react-toastify';
+import { getRevenueStats, fetchUserProfile } from '../../Utils/api';
+import toast from 'react-hot-toast';
 
 // Direct import of recharts components
 import {

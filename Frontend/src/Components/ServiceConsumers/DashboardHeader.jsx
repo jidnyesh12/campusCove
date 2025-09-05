@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaCalendarAlt, FaRegClock } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../Context/AuthContext';
 import { useLocation } from 'react-router-dom';
 
 export default function DashboardHeader() {

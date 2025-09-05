@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHome, FaUtensils, FaDumbbell, FaUserCircle, FaArrowRight, FaSpinner, FaCalendarCheck } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import api from '../../utils/api';
+import toast from 'react-hot-toast';
+import api from '../../Utils/api';
 
 export default function StudentDashboard() {
   const navigate = useNavigate();

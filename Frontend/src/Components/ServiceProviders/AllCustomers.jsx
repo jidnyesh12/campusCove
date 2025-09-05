@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSpinner, FaUserCircle, FaEnvelope, FaCalendarAlt, FaInfoCircle, FaMapMarkerAlt, FaRupeeSign, FaSearch, FaBed, FaTimes, FaPhoneAlt, FaIdCard, FaGraduationCap, FaUser, FaTrash, FaExclamationTriangle } from 'react-icons/fa';
-import { getAcceptedBookings, removeCustomer } from '../../utils/api';
-import { toast } from 'react-toastify';
+import { getAcceptedBookings, removeCustomer } from '../../Utils/api';
+import toast from 'react-hot-toast';
 
 export default function AllCustomers() {
   const [customers, setCustomers] = useState([]);

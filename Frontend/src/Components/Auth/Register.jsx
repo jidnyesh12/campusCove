@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaUser, FaEnvelope, FaLock, FaUserTag } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../Context/AuthContext";
 
 export default function Register() {
     const navigate = useNavigate();

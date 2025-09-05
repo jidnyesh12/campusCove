@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Stats from '../dashboard/Stats';
-import ActivityList from '../dashboard/ActivityList';
+import Stats from '../Dashboard/Stats';
+import ActivityList from '../Dashboard/ActivityList';
 import { useNavigate } from 'react-router-dom';
 import { FaSpinner, FaUtensils, FaBuilding, FaDumbbell, FaExclamationCircle } from 'react-icons/fa';
-import { getRevenueStats, getBookings, fetchUserProfile, getAcceptedBookings } from '../../utils/api';
+import { getRevenueStats, getBookings, fetchUserProfile, getAcceptedBookings } from '../../Utils/api';
 
 export default function OwnerDashboard() {
   const navigate = useNavigate();

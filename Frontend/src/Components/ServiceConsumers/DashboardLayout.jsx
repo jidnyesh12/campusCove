@@ -1,9 +1,9 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import StudentSidebar from '../dashboard/StudentSidebar';
+import StudentSidebar from '../Dashboard/StudentSidebar';
 import OwnerSidebar from '../ServiceProviders/OwnerSidebar';
 import DashboardHeader from '../ServiceConsumers/DashboardHeader';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../Context/AuthContext';
 
 export default function DashboardLayout() {
   const { user } = useAuth();

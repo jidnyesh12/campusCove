@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaFileAlt, FaUpload, FaTrash, FaCheckCircle, FaFileImage, FaFilePdf, FaDownload, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
-import api from '../../utils/api';
-import { toast } from 'react-toastify';
+import api from '../../Utils/api';
+import toast from 'react-hot-toast';
 
 const DeleteConfirmationModal = ({ document, onClose, onConfirm, isDeleting }) => {
   if (!document) return null;

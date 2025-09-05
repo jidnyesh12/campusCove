@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { FaHome, FaBook, FaUtensils, FaDumbbell, FaUser, FaSignOutAlt, FaBell, FaSearch } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../Context/AuthContext';
 
 export default function StudentDashboardLayout() {
   const { user, logout } = useAuth();

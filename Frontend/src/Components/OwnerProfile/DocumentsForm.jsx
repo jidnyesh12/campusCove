@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaFileAlt, FaUpload, FaTrashAlt, FaSpinner, FaCheck, FaExclamationTriangle, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import { useOwnerProfile } from '../../context/OwnerProfileContext';
+import toast from 'react-hot-toast';
+import { useOwnerProfile } from '../../Context/OwnerProfileContext';
 
 export default function DocumentsForm({ initialData, onClose }) {
   const { uploadDocument, deleteDocument, getProfile, getCompletionSteps } = useOwnerProfile();

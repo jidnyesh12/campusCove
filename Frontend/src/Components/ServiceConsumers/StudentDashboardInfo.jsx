@@ -1,6 +1,6 @@
 import React from 'react';
-import Stats from '../dashboard/Stats';
-import ActivityList from '../dashboard/ActivityList';
+import Stats from '../Dashboard/Stats';
+import ActivityList from '../Dashboard/ActivityList';
 
 export default function DashboardStats() {
   const statsData = [

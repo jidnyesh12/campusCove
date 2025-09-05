@@ -27,9 +27,9 @@ import {
   FaSpinner,
   FaCreditCard
 } from 'react-icons/fa';
-import { fetchOwnerDetails, fetchOwnerProfileById, checkServiceBookingStatus, getUserDetails } from '../../utils/api';
-import { initiateRazorpayPayment } from '../../utils/razorpay';
-import { toast } from 'react-toastify';
+import { fetchOwnerDetails, fetchOwnerProfileById, checkServiceBookingStatus, getUserDetails } from '../../Utils/api';
+import { initiateRazorpayPayment } from '../../Utils/razorpay';
+import toast from 'react-hot-toast';
 import OwnerProfileModal from './OwnerProfileModal';
 import BookingModal from './BookingModal';
 import Receipt from './Receipt';

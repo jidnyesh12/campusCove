@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCalendarAlt, FaHourglass, FaSpinner, FaRegStickyNote, FaTimes, FaUtensils, FaDumbbell } from 'react-icons/fa';
-import { createBookingRequest } from '../../utils/api';
-import { toast } from 'react-toastify';
+import { createBookingRequest } from '../../Utils/api';
+import toast from 'react-hot-toast';
 
 export default function BookingModal({ service, serviceType, onClose, onSuccess }) {
   const [formData, setFormData] = useState({

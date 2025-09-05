@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
-import PublicLayout from "./layouts/PublicLayout";
+import PublicLayout from "./Layouts/PublicLayout";
 import DashboardLayout from './Components/ServiceConsumers/DashboardLayout.jsx';
 
 // Wrappers
@@ -12,16 +12,16 @@ import StudentDashboard from "./Components/ServiceConsumers/StudentDashboard.jsx
 import OwnerDashboard from "./Components/ServiceProviders/OwnerDashboard.jsx";
 
 // Components
-import AboutCampusCove from "./Components/Landingpage/AboutCampusCove.jsx";
-import MessBookingInfo from "./Components/Landingpage/MessBookingInfo.jsx";
-import OtherInfos from "./Components/Landingpage/OtherInfos.jsx";
-import FacilitiesList from "./Components/Landingpage/FacilitiesList.jsx";
-import MovingSlogan from "./Components/Landingpage/MovingSlogan.jsx";
-import HostelBookingInfo from "./Components/Landingpage/HostelBookingInfo.jsx";
-import FAQ from "./Components/Landingpage/FAQs.jsx";
-import Contact from "./Components/Landingpage/Contact.jsx";
-import Login from "./Components/Login.jsx";
-import Register from "./Components/Register.jsx";
+import AboutCampusCove from "./Components/LandingPage/AboutCampusCove.jsx";
+import MessBookingInfo from "./Components/LandingPage/MessBookingInfo.jsx";
+import OtherInfos from "./Components/LandingPage/OtherInfos.jsx";
+import FacilitiesList from "./Components/LandingPage/FacilitiesList.jsx";
+import MovingSlogan from "./Components/LandingPage/MovingSlogan.jsx";
+import HostelBookingInfo from "./Components/LandingPage/HostelBookingInfo.jsx";
+import FAQ from "./Components/LandingPage/FAQs.jsx";
+import Contact from "./Components/LandingPage/Contact.jsx";
+import Login from "./Components/Auth/Login.jsx";
+import Register from "./Components/Auth/Register.jsx";
 import VerifyEmail from "./Components/Auth/VerifyEmail.jsx";
 import ErrorBoundary from "./Components/ErrorBoundary.jsx";
 import Profile from "./Components/Profile.jsx";
@@ -35,7 +35,7 @@ import Revenew from "./Components/ServiceProviders/Revenew.jsx";
 import ServiceManagement from "./Components/ServiceProviders/ServiceManagement.jsx";
 
 // Protected Routes
-import ProtectedRoute from "./Components/protected/ProtectedRoute";
+import ProtectedRoute from "./Components/Protected/ProtectedRoute";
 
 // ServiceConsumer Components
 import Hostels from "./Components/ServiceConsumers/Hostels.jsx";

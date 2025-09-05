@@ -1,4 +1,4 @@
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { updatePaymentStatus } from './api';
 
 // Load Razorpay script dynamically

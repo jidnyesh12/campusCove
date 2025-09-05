@@ -3,9 +3,9 @@ import { FaMapMarkerAlt, FaRupeeSign, FaBed, FaWifi, FaSnowflake, FaTv, FaParkin
 import HostelDetail from './HostelDetail';
 import BookingModal from './BookingModal';
 import Receipt from './Receipt';
-import { fetchHostels, checkServiceBookingStatus, getUserDetails } from '../../utils/api';
-import { initiateRazorpayPayment } from '../../utils/razorpay';
-import { toast } from 'react-toastify';
+import { fetchHostels, checkServiceBookingStatus, getUserDetails } from '../../Utils/api';
+import { initiateRazorpayPayment } from '../../Utils/razorpay';
+import toast from 'react-hot-toast';
 
 export default function Hostels() {
   const [hostels, setHostels] = useState([]);

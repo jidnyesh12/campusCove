@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { toast } from 'react-toastify';
-import api from '../utils/api';
+import { toast } from 'react-hot-toast';
+import api from '../Utils/api';
 
 // Create context
 const OwnerProfileContext = createContext();

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserCircle, FaSpinner, FaCamera, FaInfoCircle, FaIdCard, FaBuilding, FaCog, FaFileAlt } from 'react-icons/fa';
-import { toast } from 'react-toastify';
-import { useOwnerProfile } from '../../context/OwnerProfileContext';
+import toast from 'react-hot-toast';
+import { useOwnerProfile } from '../../Context/OwnerProfileContext';
 import PersonalInfoForm from './PersonalInfoForm';
 import BusinessInfoForm from './BusinessInfoForm';
 import PreferencesForm from './PreferencesForm';

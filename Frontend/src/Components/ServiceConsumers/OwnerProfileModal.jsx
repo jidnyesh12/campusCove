@@ -9,7 +9,7 @@ import {
   FaSpinner, 
   FaIdCard 
 } from 'react-icons/fa';
-import { fetchOwnerProfileById } from '../../utils/api';
+import { fetchOwnerProfileById } from '../../Utils/api';
 
 const OwnerProfileModal = ({ ownerId, onClose }) => {
   const [ownerProfile, setOwnerProfile] = useState(null);

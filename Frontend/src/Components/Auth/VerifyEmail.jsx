@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { verifyEmail, resendOTP } from '../../utils/api';
-import { toast } from 'react-toastify';
+import { verifyEmail, resendOTP } from '../../Utils/api';
+import { toast } from 'react-hot-toast';
 import { FaEnvelope, FaLock, FaSpinner, FaRedo } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../Context/AuthContext';
 
 const VerifyEmail = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);

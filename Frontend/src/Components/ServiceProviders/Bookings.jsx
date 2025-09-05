@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaSpinner, FaCalendarAlt, FaCheckCircle, FaTimesCircle, FaFilter, FaBed, FaRupeeSign, FaMapMarkerAlt, FaUtensils, FaDumbbell } from 'react-icons/fa';
-import { getBookings, updateBookingStatus, fetchUserProfile } from '../../utils/api';
-import { toast } from 'react-toastify';
+import { getBookings, updateBookingStatus, fetchUserProfile } from '../../Utils/api';
+import toast from 'react-hot-toast';
 
 export default function Bookings() {
   const [bookings, setBookings] = useState([]);

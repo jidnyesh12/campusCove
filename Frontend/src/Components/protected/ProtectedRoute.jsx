@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { toast } from 'react-toastify';
+import { useAuth } from '../../Context/AuthContext';
+import toast from 'react-hot-toast';
 
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, loading, pendingVerification } = useAuth();

@@ -5,9 +5,9 @@ import PersonalInfoForm from './StudentProfile/PersonalInfoForm';
 import AcademicInfoForm from './StudentProfile/AcademicInfoForm';
 import PreferencesForm from './StudentProfile/PreferencesForm';
 import DocumentsForm from './StudentProfile/DocumentsForm';
-import { toast } from 'react-toastify';
-import api, { getUserDetails, updatePersonalInfo } from '../utils/api';
-import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
+import api, { getUserDetails, updatePersonalInfo } from '../Utils/api';
+import { useAuth } from '../Context/AuthContext';
 
 export default function Profile() {
   const { user } = useAuth();

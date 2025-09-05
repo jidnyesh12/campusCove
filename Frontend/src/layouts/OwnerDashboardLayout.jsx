@@ -4,7 +4,7 @@ import {
   FaHome, FaUsers, FaMoneyBillWave, FaClipboardList, 
   FaCog, FaSignOutAlt, FaBell, FaSearch, FaPlus, FaUser 
 } from 'react-icons/fa';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../Context/AuthContext';
 
 export default function OwnerDashboardLayout() {
   const { user, logout } = useAuth();

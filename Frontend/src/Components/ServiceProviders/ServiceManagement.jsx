@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../Context/AuthContext';
 import { FaBuilding, FaUtensils, FaDumbbell, FaPlus, FaEdit, FaTrash, FaUpload, FaCheck, FaSpinner } from 'react-icons/fa';
 import axios from 'axios';
 

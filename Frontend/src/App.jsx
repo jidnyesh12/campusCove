@@ -1,7 +1,7 @@
 import { RouterProvider } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { StudentProfileProvider } from './context/StudentProfileContext';
-import { OwnerProfileProvider } from './context/OwnerProfileContext';
+import { AuthProvider } from './Context/AuthContext';
+import { StudentProfileProvider } from './Context/StudentProfileContext';
+import { OwnerProfileProvider } from './Context/OwnerProfileContext';
 import { router } from './routes';
 
 export default function App() {

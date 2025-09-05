@@ -3,9 +3,9 @@ import { FaMapMarkerAlt, FaRupeeSign, FaDumbbell, FaClock, FaMale, FaFemale, FaU
 import GymDetail from './GymDetail';
 import BookingModal from './BookingModal';
 import Receipt from './Receipt';
-import { fetchGyms, checkServiceBookingStatus, getUserDetails } from '../../utils/api';
-import { initiateRazorpayPayment } from '../../utils/razorpay';
-import { toast } from 'react-toastify';
+import { fetchGyms, checkServiceBookingStatus, getUserDetails } from '../../Utils/api';
+import { initiateRazorpayPayment } from '../../Utils/razorpay';
+import toast from 'react-hot-toast';
 
 export default function Gym() {
   const [gyms, setGyms] = useState([]);
